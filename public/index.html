@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Here</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300&family=Tilt+Neon&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            text-align: center;
+            font-family: 'Open sans', sans-serif;
+            background-image: url("background.jpg");
+            background-repeat: no-repeat;
+            background-size: cover;
+            height: 100vh;
+        }
+
+        main {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        h1 {
+            font-size: 4rem;
+        }
+
+        button {
+            margin-top: 100px;
+            border: none;
+            width: 300px;
+            height: 75px;
+            font-size: 2rem;
+            border-radius: 15px;
+            opacity: 0.8;
+            cursor: pointer;
+            transition: all 500ms ease-in-out;
+        }
+
+        button:hover {
+            width: 400px;
+        }
+
+        input {
+            width: 300px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-family: 'Tilt neon', cursive;
+            border-radius: 10px;
+            position: relative;
+            top: 50px;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1>How's the weather?</h1>
+        <input placeholder="Whose checking in?" id="user" required><br>
+        <button id="check-in">Check-in!</button>
+    </main>
+    <script>
+        if ("geolocation" in navigator) {
+            console.log("Geolocation is supported")
+            const checkinBtn = document.getElementById("check-in")
+            const reportLocation = () => {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const user = document.getElementById("user").value
+                    const lat = position.coords.latitude
+                    const lon = position.coords.longitude
+                    const coords = { lat, lon, user }
+                    console.log(coords)
+
+                    const postOptions = {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(coords)
+                    }
+
+                    const response = await fetch("/api", postOptions)
+                    const textResponse = await response.text()
+                    console.log(textResponse)
+
+                    if (textResponse === "Success @/api POST (Redricting to results page)") {
+                        console.log("Redricting...")
+                        window.location.href = "/results.html"
+                    }
+                    else {
+                        alert(`An error occured: ${textResponse}`)
+                    }
+
+                })
+            }
+
+            checkinBtn.addEventListener ("click", reportLocation)
+        } else {
+            alert("An error a occurred: Your browser is not supported.")
+        }
+    </script>
+</body>
+
+</html>

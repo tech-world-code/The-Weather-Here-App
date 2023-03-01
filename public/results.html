@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+        integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+        integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300&family=Tilt+Neon&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        #map {
+            height: 500px;
+        }
+
+        .popup {
+            max-height: 150px;
+            overflow-y: scroll;
+        }
+
+        body {
+            background-image: url("background.jpg");
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+            text-align: center;
+        }
+
+        .check-in-list {
+            background-color: white;
+            opacity: 0.8;
+            margin: 20px;
+            min-height: 50px;
+            vertical-align: middle;
+            font-family: 'Tilt neon', cursive;
+            border-radius: 15px;
+            overflow-y: scroll;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div id="checkins"></div>
+    <script>
+        const getData = async () => {
+            const response = await fetch("/api")
+            const data = await response.json()
+            console.log(data)
+
+            for (let i = 0; i < data.length; i++) {
+                const textData = JSON.stringify(data[i])
+                const finalData = textData.replace(/[^a-zA-Z0-9.,]/g, '')
+                let checkins = document.getElementById("checkins")
+                let createCheckinList = document.createElement("div")
+                createCheckinList.id = i
+                createCheckinList.className = "check-in-list"
+                createCheckinList.textContent = textData
+                checkins.appendChild(createCheckinList)
+            }
+
+            const map = L.map('map').setView([33, 117], 2)
+            L.tileLayer(
+                'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+            }).addTo(map);
+
+            for (let i = 0; i < data.length; i++) {
+                let marker = L.marker([data[i].lat, data[i].lon]).addTo(map)
+                marker.bindPopup(`<div class="popup">The weather in <b>${data[i].weather.timezone}</b> is <b>${data[i].weather.currentConditions.conditions}</b>. The next few days will have <b>${data[i].weather.description}</b> This check-in occured on ${data[i].timestamp} and was reported by <b>${data[i].user}</b> <a href="#${i}">Full report</div>`)
+            }
+        }
+
+        window.addEventListener("load", getData)
+    </script>
+</body>
+
+</html>
